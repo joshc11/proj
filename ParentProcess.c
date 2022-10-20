@@ -3,13 +3,13 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/wait.h>
+
 const int SERVER_COUNT = 10;
 const char* SERVER = "LikeServer";
-const char* ERROR_STRING = "Child Server failed to start";
 const char* FILE_NAME = "./LikeServer";
 const int CHILD = 0;
-const int ERROR = 1;
 const int BUFFER = 30;
+
 int main(){
 	FILE *log;
 	char name[BUFFER];
