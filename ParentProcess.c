@@ -7,6 +7,8 @@
 const int SERVER_COUNT = 10;
 const char* SERVER = "LikeServer";
 const char* FILE_NAME = "./LikeServer";
+const char* LOG_FILE = "/tmp/ParentProcessStatus";
+const char* APPEND = "a";
 const int CHILD = 0;
 const int BUFFER = 30;
 
@@ -25,14 +27,14 @@ int main(){
 		strcat(name, number);
 		args[0] = name;
 		if (pid < CHILD) {
-			log = fopen("/tmp/ParentProcessStatus", "a");
+			log = fopen(LOG_FILE, APPEND);
         	fprintf(log, "FAILED TO START %s\n", name);
         	fclose(log);
 		}
 		if (pid == CHILD){
 			execvp(FILE_NAME, args);
 		}
-		log = fopen("/tmp/ParentProcessStatus", "a");
+		log = fopen(LOG_FILE, APPEND);
         fprintf(log, "STARTED %s\n", name);
         fclose(log);
 		sleep(1);
@@ -49,11 +51,11 @@ int main(){
 			}
 		}
 		if (WIFEXITED(status)) {
-			log = fopen("/tmp/ParentProcessStatus", "a");
+			log = fopen(LOG_FILE, APPEND);
         	fprintf(log, "ENDED %s\n", name);
         	fclose(log);
 		} else {
-			log = fopen("/tmp/ParentProcessStatus", "a");
+			log = fopen(LOG_FILE, APPEND);
         	fprintf(log, "ABORTED %s\n", name);
         	fclose(log);
 		}
