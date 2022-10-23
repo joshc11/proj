@@ -11,10 +11,13 @@ const char* LOG_FILE = "/tmp/ParentProcessStatus";
 const char* APPEND = "a";
 const int CHILD = 0;
 const int BUFFER = 30;
+const char* CHILD_STRING = "Child";
+const int SUCCESS = 0;
 
 int main(){
 	FILE *log;
 	char name[BUFFER];
+	char childId[BUFFER];
 	static char * args[1];
 	char number[BUFFER];
 	pid_t pid;
@@ -23,19 +26,21 @@ int main(){
 		pid = fork();
 		children[i] = (long)pid;
 		sprintf(number, "%d", i);
+		strcpy(childId, CHILD_STRING);
 		strcpy(name, SERVER);
+		strcat(childId, number);
 		strcat(name, number);
 		args[0] = name;
 		if (pid < CHILD) {
 			log = fopen(LOG_FILE, APPEND);
-        	fprintf(log, "FAILED TO START %s\n", name);
+        	fprintf(log, "FAILED TO START %s\n", childId);
         	fclose(log);
 		}
 		if (pid == CHILD){
 			execvp(FILE_NAME, args);
 		}
 		log = fopen(LOG_FILE, APPEND);
-        fprintf(log, "STARTED %s\n", name);
+        fprintf(log, "STARTED %s\n", childId);
         fclose(log);
 		sleep(1);
 	}
@@ -45,18 +50,18 @@ int main(){
 		for (int i = 0; i < SERVER_COUNT; i++){
 			if (children[i] == pid){
 				sprintf(number, "%d", i);
-        		strcpy(name, SERVER);
-        		strcat(name, number);
+        		strcpy(childId, CHILD_STRING);
+        		strcat(childId, number);
 				break;
 			}
 		}
-		if (WIFEXITED(status)) {
+		if (status == SUCCESS) {
 			log = fopen(LOG_FILE, APPEND);
-        	fprintf(log, "ENDED %s\n", name);
+        	fprintf(log, "ENDED %s\n", childId);
         	fclose(log);
 		} else {
 			log = fopen(LOG_FILE, APPEND);
-        	fprintf(log, "ABORTED %s\n", name);
+        	fprintf(log, "ENDED W/ ERROR %s\n", childId);
         	fclose(log);
 		}
 	}

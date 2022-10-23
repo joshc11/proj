@@ -13,6 +13,7 @@ const char *APPEND = "a";
 const char *DIRECTORY = "/tmp/";
 const int BUFFER = 100;
 const int PORT = 9000;
+const char *SUCCESS = "0";
 
 float elasped(struct timeval start){
 	struct timeval current;
@@ -21,18 +22,14 @@ float elasped(struct timeval start){
 }
 
 int main (int argc, char **argv){
+	int error = 0;
 	int remote, server;
-	if((server = socket(AF_INET, SOCK_STREAM, 0)) < 0){
-		abort();
-	};
 	struct sockaddr_in address;
 	address.sin_family = AF_INET;
 	address.sin_port = htons(PORT);
 	address.sin_addr.s_addr = INADDR_ANY;
-	if ((remote = connect(server, (struct sockaddr*) &address, sizeof(address))) == -1){
-		abort();
-	};
-	char* name = argv[1];
+
+	char* name = argv[0];
 	int count;
 	char message[BUFFER];
 	FILE *log;
@@ -46,14 +43,24 @@ int main (int argc, char **argv){
 	while (elasped(start) < RUNTIME){
 		count = rand() % 43;
 		sprintf(message,"%s %d", name, count);
-		send(server, message, sizeof(message),0);
-		sprintf(message,"1");
-		recv(remote, &message, sizeof(message), 0);
-		log = fopen(fileName, APPEND);
-		fprintf(log, "Likeserver %d %s\n", count, message);
-		fclose(log);
+		if(((server = socket(AF_INET, SOCK_STREAM, 0)) < 0) || (connect(server, (struct sockaddr*) &address, sizeof(address)) < 0)){
+       		log = fopen(fileName, APPEND);
+        	fprintf(log, "Likeserver %d 1\n", count);
+        	fclose(log);
+			error = 1;
+    	} else {
+			send(server, message, sizeof(message), 0);
+			recv(server, &message, sizeof(message), 0);
+			if(strcmp(message, SUCCESS)){
+				sprintf(message,"1");
+				error = 1;
+			}
+			log = fopen(fileName, APPEND);
+			fprintf(log, "Likeserver %d %s\n", count, message);
+			fclose(log);
+		}
 		sleep(rand() % 5 + 1);
 	}
-	close(remote);
+	if (error){exit(error);}
 	return 0;
 }
