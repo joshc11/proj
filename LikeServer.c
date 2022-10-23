@@ -8,7 +8,7 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 
-const float RUNTIME = .5 * 60;
+const float RUNTIME = 5 * 60;
 const char *APPEND = "a";
 const char *DIRECTORY = "/tmp/";
 const int BUFFER = 100;
@@ -39,19 +39,20 @@ int main (int argc, char **argv){
 	struct timeval start;
 	gettimeofday(&start, NULL);
 	srand((int)start.tv_sec);
-
+	count = rand() % 43;
 	while (elasped(start) < RUNTIME){
-		count = rand() % 43;
-		sprintf(message,"%s %d", name, count);
 		if(((server = socket(AF_INET, SOCK_STREAM, 0)) < 0) || (connect(server, (struct sockaddr*) &address, sizeof(address)) < 0)){
        		log = fopen(fileName, APPEND);
         	fprintf(log, "Likeserver %d 1\n", count);
         	fclose(log);
 			error = 1;
     	} else {
+        	sprintf(message,"%s %d", name, count);
 			send(server, message, sizeof(message), 0);
 			recv(server, &message, sizeof(message), 0);
-			if(strcmp(message, SUCCESS)){
+			if(!strcmp(message, SUCCESS)){
+				count = rand() % 43;
+       		} else {
 				sprintf(message,"1");
 				error = 1;
 			}
